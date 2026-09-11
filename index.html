@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#086b8f">
+  <meta name="description" content="無人機學科題庫練習、正式抽考與學習進度追蹤">
+  <title>飛行腦｜無人機學科模擬考</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" type="button" data-action="home" aria-label="回到首頁">
+        <span class="brand-mark" aria-hidden="true">飛</span>
+        <span><strong>飛行腦</strong><small>無人機學科模擬考</small></span>
+      </button>
+      <nav class="main-nav" aria-label="主要功能">
+        <button type="button" data-action="home">首頁</button>
+        <button type="button" data-action="dashboard">學習進度</button>
+      </nav>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer>
+      <span>題庫共 <strong id="footer-count">—</strong> 題</span>
+      <span>安澤製作 · 進度只儲存在這台裝置</span>
+    </footer>
+  </div>
+
+  <div id="dialog-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
