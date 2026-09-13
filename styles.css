@@ -48,11 +48,24 @@ button:focus-visible, input:focus-visible { outline: 4px solid rgba(22, 118, 184
 
 .app-shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
 .topbar { height: 76px; padding: 0 clamp(18px, 4vw, 64px); display: flex; align-items: center; justify-content: space-between; background: rgba(249, 252, 253, .88); border-bottom: 1px solid rgba(8, 107, 143, .12); backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 20; }
-.brand { display: flex; align-items: center; gap: 11px; border: 0; background: transparent; color: var(--ink); text-align: left; padding: 0; }
-.brand-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: linear-gradient(145deg, #075985, #0e9fbd); color: white; font-size: 22px; font-weight: 900; transform: rotate(-3deg); box-shadow: 0 7px 0 #083b52; }
+.brand { position: relative; isolation: isolate; display: flex; align-items: center; gap: 11px; border: 0; background: transparent; color: var(--ink); text-align: left; padding: 0; }
+.brand::after { content: ""; position: absolute; z-index: -1; left: 8px; top: 50%; width: 88px; height: 3px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(32, 164, 197, .75), transparent); opacity: 0; transform: translate(-28px, -50%) scaleX(.15); transform-origin: left center; }
+.brand-mark { position: relative; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: linear-gradient(145deg, #075985, #0e9fbd); color: white; font-size: 22px; font-weight: 900; transform: rotate(-3deg); box-shadow: 0 7px 0 #083b52; transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease; }
+.brand-mark::before { content: ""; position: absolute; inset: -7px; border: 1px dashed rgba(14, 159, 189, .72); border-radius: 50%; opacity: 0; transform: scale(.82); transition: opacity .2s ease, transform .25s ease; }
+.brand-mark::after { content: ""; position: absolute; top: -7px; left: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); opacity: 0; box-shadow: 0 0 0 3px rgba(244, 180, 0, .18); }
 .brand strong, .brand small { display: block; }
-.brand strong { font-size: 20px; line-height: 1; }
-.brand small { color: var(--muted); margin-top: 5px; font-size: 12px; }
+.brand > span:last-child { transition: transform .25s ease; }
+.brand strong { font-size: 20px; line-height: 1; transition: color .2s ease, letter-spacing .25s ease; }
+.brand small { color: var(--muted); margin-top: 5px; font-size: 12px; transition: color .2s ease, letter-spacing .25s ease; }
+.brand:hover .brand-mark, .brand:focus-visible .brand-mark { transform: translateY(-3px) rotate(0deg) scale(1.05); box-shadow: 0 10px 0 #083b52, 0 13px 24px rgba(8, 107, 143, .22); }
+.brand:hover .brand-mark::before, .brand:focus-visible .brand-mark::before { opacity: 1; transform: scale(1); animation: brand-radar 2.4s linear infinite; }
+.brand:hover .brand-mark::after, .brand:focus-visible .brand-mark::after { opacity: 1; animation: brand-beacon 1.2s ease-in-out infinite; }
+.brand:hover > span:last-child, .brand:focus-visible > span:last-child { transform: translateX(3px); }
+.brand:hover strong, .brand:focus-visible strong { color: var(--purple); letter-spacing: .025em; }
+.brand:hover small, .brand:focus-visible small { color: #2385a2; letter-spacing: .018em; }
+.brand.is-launching::after { animation: brand-trail .68s ease-out; }
+.brand.is-launching .brand-mark { animation: brand-launch .68s cubic-bezier(.2,.8,.2,1); }
+.brand.is-launching > span:last-child { animation: brand-copy .68s ease-out; }
 .main-nav { display: flex; gap: 8px; }
 .main-nav button { border: 0; background: transparent; color: var(--muted); border-radius: 12px; padding: 10px 14px; font-weight: 800; }
 .main-nav button:hover { background: #e2f2f7; color: var(--purple); }
@@ -202,6 +215,25 @@ body[data-view="home"] .mode-card { min-height: clamp(205px, 25vh, 245px); }
 .empty { padding: 28px 10px; color: var(--muted); text-align: center; }
 .danger-zone { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
 
+/* Keep the progress overview compact without crowding its information. */
+body[data-view="dashboard"] main { padding-block: clamp(18px, 3vh, 32px); }
+body[data-view="dashboard"] footer { padding-block: 16px; }
+body[data-view="dashboard"] .dashboard-head { align-items: center; margin-bottom: 20px; }
+body[data-view="dashboard"] .dashboard-head .eyebrow { margin-bottom: 7px; }
+body[data-view="dashboard"] .dashboard-head h1 { font-size: clamp(34px, 4vw, 48px); line-height: 1; }
+body[data-view="dashboard"] .stats-grid { margin-bottom: 24px; }
+body[data-view="dashboard"] .stat-card { padding: 15px 16px; }
+body[data-view="dashboard"] .stat-card strong { margin-bottom: 3px; }
+body[data-view="dashboard"] .dashboard-columns { align-items: start; gap: 18px; }
+body[data-view="dashboard"] .section-card { padding: clamp(19px, 2.4vw, 25px); }
+body[data-view="dashboard"] .section-card h2 { margin-bottom: 17px; }
+body[data-view="dashboard"] .chapter-progress { gap: 18px; }
+body[data-view="dashboard"] .chapter-row-head { margin-bottom: 6px; }
+body[data-view="dashboard"] .chapter-detail { margin-top: 6px; }
+body[data-view="dashboard"] .history-item { padding: 11px 13px; }
+body[data-view="dashboard"] .empty { padding-block: 20px; }
+body[data-view="dashboard"] .danger-zone { margin-top: 16px; padding-top: 16px; }
+
 .dialog-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(8, 38, 54, .68); backdrop-filter: blur(7px); }
 .dialog { width: min(470px, 100%); padding: 28px; border-radius: 22px; background: white; box-shadow: 0 28px 90px rgba(0,0,0,.3); }
 .dialog h2 { font-size: 25px; }
@@ -209,6 +241,32 @@ body[data-view="home"] .mode-card { min-height: clamp(205px, 25vh, 245px); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .toast { position: fixed; left: 50%; bottom: 26px; z-index: 200; transform: translate(-50%, 130px); padding: 12px 18px; border-radius: 12px; background: var(--ink); color: white; box-shadow: var(--shadow); transition: transform .25s ease; font-weight: 800; }
 .toast.show { transform: translate(-50%, 0); }
+
+@keyframes brand-radar {
+  to { transform: scale(1) rotate(360deg); }
+}
+
+@keyframes brand-beacon {
+  50% { opacity: .45; box-shadow: 0 0 0 7px rgba(244, 180, 0, 0); }
+}
+
+@keyframes brand-launch {
+  0%, 100% { transform: rotate(-3deg) translate(0, 0); }
+  24% { transform: rotate(-8deg) translate(-2px, 2px) scale(.98); }
+  58% { transform: rotate(5deg) translate(13px, -8px) scale(1.07); box-shadow: 0 12px 0 #083b52, 0 16px 28px rgba(8, 107, 143, .24); }
+  78% { transform: rotate(0deg) translate(4px, -2px) scale(1.02); }
+}
+
+@keyframes brand-trail {
+  0% { opacity: 0; transform: translate(-28px, -50%) scaleX(.15); }
+  38% { opacity: .85; }
+  100% { opacity: 0; transform: translate(48px, -50%) scaleX(1); }
+}
+
+@keyframes brand-copy {
+  0%, 100% { transform: translateX(0); }
+  48% { transform: translateX(8px); }
+}
 
 @media (max-width: 900px) {
   .mode-grid { grid-template-columns: 1fr 1fr; }
@@ -241,7 +299,7 @@ body[data-view="home"] .mode-card { min-height: clamp(205px, 25vh, 245px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 
 @media (min-width: 769px) and (max-height: 820px) {

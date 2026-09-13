@@ -5,6 +5,18 @@ const path = require("path");
 const sourcePath = path.join(__dirname, "無人機學科測驗題庫 (1).csv");
 const outputPath = path.join(__dirname, "questions.js");
 
+function normalizeQuestionText(value) {
+  return value
+    .trim()
+    .replace(/[\s\u3000]+/g, " ")
+    // PDF/CSV line wrapping inserted spaces throughout Chinese sentences. Keep a
+    // space only when both neighbouring characters are ASCII letters or digits,
+    // such as "40 kts" or "Inertial Navigation System".
+    .replace(/([^A-Za-z0-9]) +(?=.)/g, "$1")
+    .replace(/([A-Za-z0-9]) +(?=[^A-Za-z0-9])/g, "$1")
+    .replace(/\bPA VE\b/g, "PAVE");
+}
+
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -56,7 +68,12 @@ const questions = rows.filter((row) => row.some(Boolean)).map((row, index) => {
   if (row.length !== expectedHeaders.length) {
     throw new Error(`CSV 第 ${index + 2} 列欄位數量不正確：${row.length}`);
   }
-  const [chapter, number, text, optionA, optionB, optionC, optionD, answer] = row.map((value) => value.trim());
+  const [chapter, number, rawText, rawOptionA, rawOptionB, rawOptionC, rawOptionD, answer] = row.map((value) => value.trim());
+  const text = normalizeQuestionText(rawText);
+  const optionA = normalizeQuestionText(rawOptionA);
+  const optionB = normalizeQuestionText(rawOptionB);
+  const optionC = normalizeQuestionText(rawOptionC);
+  const optionD = normalizeQuestionText(rawOptionD);
   if (!chapter || !number || !text || !optionA || !optionB || !optionC || !optionD || !/[ABCD]/.test(answer)) {
     throw new Error(`CSV 第 ${index + 2} 列含有空白或無效答案。`);
   }

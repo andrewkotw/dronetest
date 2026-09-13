@@ -680,7 +680,16 @@
   document.querySelector(".topbar").addEventListener("click", function (event) {
     const target = event.target.closest("[data-action]");
     if (!target) return;
-    if (target.dataset.action === "home") goTo("home");
+    if (target.dataset.action === "home") {
+      const brand = target.closest(".brand");
+      if (brand) {
+        brand.classList.remove("is-launching");
+        void brand.offsetWidth;
+        brand.classList.add("is-launching");
+        window.setTimeout(() => brand.classList.remove("is-launching"), 700);
+      }
+      goTo("home");
+    }
     if (target.dataset.action === "dashboard") goTo("dashboard");
   });
 
