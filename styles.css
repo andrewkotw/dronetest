@@ -329,7 +329,7 @@ body[data-view="home"] .mode-card { min-height: clamp(205px, 25vh, 245px); }
   body[data-view="session"] .exam-toolbar { flex: 0 0 auto; margin-top: 10px; }
   body[data-view="session"] .number-grid {
     flex: 0 0 auto;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(20, 1fr);
     margin-top: 10px;
     gap: 5px;
   }

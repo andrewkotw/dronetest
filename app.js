@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = "drone-exam-state";
   const STORAGE_VERSION = 1;
-  const SESSION_SIZE = 30;
+  const SESSION_SIZE = 40;
   const PASS_RATE = 0.8;
   const DISPLAY_LETTERS = ["A", "B", "C", "D"];
 
@@ -34,11 +34,21 @@
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!parsed || parsed.version !== STORAGE_VERSION) return defaultState();
+      const savedSession = parsed.activeSession;
+      const savedPoolSize = savedSession?.mode === "practice"
+        ? questions.filter((question) => savedSession.selectedChapters?.includes(question.chapter)).length
+        : questions.length;
+      const activeSession = savedSession
+        && Array.isArray(savedSession.questionIds)
+        && savedSession.questionIds.length === Math.min(SESSION_SIZE, savedPoolSize)
+        ? savedSession
+        : null;
       return {
         ...defaultState(),
         ...parsed,
         progress: parsed.progress || {},
-        examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : []
+        examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : [],
+        activeSession
       };
     } catch (error) {
       return defaultState();
@@ -153,7 +163,7 @@
           <div>
             <p class="eyebrow">Remote Pilot Prep</p>
             <h1>每答一題，<br>離起飛更近一點。</h1>
-            <p class="lead">從 ${questions.length} 道無人機學科題中反覆練習、消化錯題，或直接挑戰一場 30 題正式抽考。</p>
+            <p class="lead">從 ${questions.length} 道無人機學科題中反覆練習、消化錯題，或直接挑戰一場 40 題正式抽考。</p>
           </div>
           <div class="hero-badge" aria-label="已接觸 ${answered} 題">
             <div><strong>${answered}</strong><span>題已接觸</span></div>
@@ -178,7 +188,7 @@
           <p>即時看答案，錯題會優先回到下一輪，逐步把題庫練熟。</p>
         </button>
         <button class="mode-card exam" type="button" data-action="start-exam">
-          <span class="card-icon" aria-hidden="true">30</span>
+          <span class="card-icon" aria-hidden="true">40</span>
           <h2>正式抽考</h2>
           <p>全題庫隨機抽題，交卷後統一公布成績與完整檢討。</p>
         </button>
@@ -197,7 +207,7 @@
         <div class="panel">
           <p class="eyebrow">Practice Mode</p>
           <h1 style="font-size:clamp(34px,6vw,58px)">選擇練習範圍</h1>
-          <p class="lead">每回合最多 30 題。待複習錯題會優先出現，接著是還沒作答過的題目。</p>
+          <p class="lead">每回合最多 40 題。待複習錯題會優先出現，接著是還沒作答過的題目。</p>
           <div class="chapter-list">
             ${chapters.map((chapter) => {
               const count = questions.filter((question) => question.chapter === chapter).length;
@@ -209,7 +219,7 @@
           </div>
           <div class="button-row">
             <button class="btn btn-secondary" type="button" data-action="toggle-chapters">取消全選</button>
-            <button class="btn btn-primary" type="button" data-action="start-practice">開始 30 題練習</button>
+            <button class="btn btn-primary" type="button" data-action="start-practice">開始 40 題練習</button>
           </div>
         </div>
       </section>`;
