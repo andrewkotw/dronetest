@@ -66,6 +66,7 @@ node generate-hints.js
 ├── questions.js            # 網站實際載入的題庫
 ├── hints.js                # 預先產生的 AI 提示與解析
 ├── assets/social-preview.png # 網站社群分享縮圖
+├── assets/favicon.svg        # 瀏覽器分頁圖示
 ├── generate-questions.js   # CSV 題庫轉換工具
 ├── generate-hints.js       # OpenAI 提示批次產生器
 ├── validate-hints.js       # AI 提示完整性與答案洩漏檢查
