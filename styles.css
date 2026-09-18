@@ -161,8 +161,18 @@ body[data-view="home"] .mode-card { min-height: clamp(205px, 25vh, 245px); }
 .feedback { margin-top: 24px; padding: 18px 20px; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .feedback.correct { background: #e1f6ed; color: #0d6343; }
 .feedback.wrong { background: #ffe5eb; color: #a31535; }
+.feedback > div { flex: 1 1 auto; min-width: 0; }
+.feedback > .btn { flex: 0 0 auto; min-width: 112px; white-space: nowrap; }
 .feedback strong { font-size: 19px; }
 .feedback p { margin: 4px 0 0; line-height: 1.45; }
+.hint-panel { margin-top: 22px; padding: 18px 20px; border: 1px solid rgba(8, 107, 143, .16); border-radius: 15px; background: #f1f9fc; color: #164d61; }
+.hint-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.hint-heading strong { font-size: 18px; }
+.hint-heading span { color: #52717d; font-size: 13px; }
+.hint-panel p { margin: 8px 0; line-height: 1.55; }
+.hint-panel p span, .ai-explanation span { display: inline-block; margin-right: 8px; padding: 2px 7px; border-radius: 999px; background: rgba(8, 107, 143, .11); font-size: 12px; font-weight: 700; }
+.hint-panel .btn { margin-top: 8px; }
+.ai-explanation { margin-top: 10px !important; padding-top: 10px; border-top: 1px solid currentColor; }
 
 .exam-toolbar { margin-top: 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .number-grid { margin-top: 26px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 7px; }

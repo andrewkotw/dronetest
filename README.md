@@ -41,6 +41,22 @@ node generate-questions.js
 
 產生器會自動清理 PDF／CSV 轉換過程中插入的異常空格，同時檢查欄位、答案與題目 ID。
 
+## 產生 AI 學習提示
+
+練習模式可以顯示兩階段提示與作答後解析。提示是預先產生的靜態內容，網站不會接觸或傳送 OpenAI API key。
+
+複製 `.env.example` 為不會被 Git 追蹤的 `.env`，填入 API key，再執行產生器：
+
+```powershell
+Copy-Item .env.example .env
+# 編輯 .env，填入 OPENAI_API_KEY
+node generate-hints.js
+```
+
+產生器會在每一題完成後更新 `hints.js`，中斷後再次執行即可接續。測試時可使用 `node generate-hints.js --limit=10`；可用 `--concurrency=1` 至 `8` 調整並行請求數；需要重新產生全部提示時可加上 `--force`。
+
+產生完成後可執行 `node validate-hints.js`，檢查題數、欄位、長度及明顯的答案洩漏。
+
 ## 專案結構
 
 ```text
@@ -48,7 +64,10 @@ node generate-questions.js
 ├── styles.css             # 介面與響應式樣式
 ├── app.js                  # 測驗、統計及本機儲存邏輯
 ├── questions.js            # 網站實際載入的題庫
+├── hints.js                # 預先產生的 AI 提示與解析
 ├── generate-questions.js   # CSV 題庫轉換工具
+├── generate-hints.js       # OpenAI 提示批次產生器
+├── validate-hints.js       # AI 提示完整性與答案洩漏檢查
 └── 無人機學科測驗題庫 (1).csv
 ```
 

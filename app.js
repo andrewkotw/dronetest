@@ -11,6 +11,7 @@
   const dialogRoot = document.getElementById("dialog-root");
   const toast = document.getElementById("toast");
   const questions = Array.isArray(window.QUESTION_BANK) ? window.QUESTION_BANK : [];
+  const questionHints = window.QUESTION_HINTS && typeof window.QUESTION_HINTS === "object" ? window.QUESTION_HINTS : {};
   const questionById = new Map(questions.map((question) => [question.id, question]));
   const chapters = [...new Set(questions.map((question) => question.chapter))];
 
@@ -126,6 +127,7 @@
       optionOrder,
       currentIndex: 0,
       answers: {},
+      hintLevels: {},
       initialMastered: mode === "practice"
         ? selected.filter((question) => getProgress(question.id).lastCorrect === true).map((question) => question.id)
         : []
@@ -283,18 +285,34 @@
               </button>`;
             }).join("")}
           </div>
+          ${isPractice && !isAnswered ? renderHintPanel(question, session) : ""}
           ${isPractice && isAnswered ? renderFeedback(question, answer, correct, order) : ""}
           ${!isPractice ? renderExamControls(session) : ""}
         </article>
       </section>`;
   }
 
+  function renderHintPanel(question, session) {
+    const hints = questionHints[question.id];
+    if (!hints) return "";
+    const level = session.hintLevels?.[question.id] || 0;
+    const buttonText = level === 0 ? "AI 提示" : "再給我一個提示";
+    return `<aside class="hint-panel" aria-live="polite">
+      <div class="hint-heading"><strong>AI 學習提示</strong><span>提示不會直接公布答案</span></div>
+      ${level >= 1 ? `<p><span>提示 1</span>${escapeHtml(hints.hint1)}</p>` : ""}
+      ${level >= 2 ? `<p><span>提示 2</span>${escapeHtml(hints.hint2)}</p>` : ""}
+      ${level < 2 ? `<button class="btn btn-secondary" type="button" data-action="show-hint">${buttonText}</button>` : ""}
+    </aside>`;
+  }
+
   function renderFeedback(question, answer, correct, order) {
     const correctIndex = order.indexOf(question.answer);
+    const explanation = questionHints[question.id]?.explanation;
     return `<div class="feedback ${correct ? "correct" : "wrong"}" role="status">
       <div>
         <strong>${correct ? "答對了！" : "再記一次，就會了。"}</strong>
         <p>${correct ? "判斷正確，繼續保持。" : `正確答案是 ${DISPLAY_LETTERS[correctIndex]}：${escapeHtml(question.options[question.answer])}`}</p>
+        ${explanation ? `<p class="ai-explanation"><span>AI 解析</span>${escapeHtml(explanation)}</p>` : ""}
       </div>
       <button class="btn ${correct ? "btn-primary" : "btn-danger"}" type="button" data-action="practice-next">${state.activeSession.currentIndex === state.activeSession.questionIds.length - 1 ? "看結果" : "下一題"}</button>
     </div>`;
@@ -349,6 +367,17 @@
     } else {
       session.answers[id] = key;
     }
+    saveState();
+    renderSession();
+  }
+
+  function showHint() {
+    const session = state.activeSession;
+    if (!session || session.mode !== "practice") return;
+    const id = session.questionIds[session.currentIndex];
+    if (session.answers[id] || !questionHints[id]) return;
+    session.hintLevels = session.hintLevels || {};
+    session.hintLevels[id] = Math.min(2, (session.hintLevels[id] || 0) + 1);
     saveState();
     renderSession();
   }
@@ -659,6 +688,7 @@
     if (action === "abandon") abandonSession();
     if (action === "exit-session") goTo("home");
     if (action === "answer") answerQuestion(target.dataset.key);
+    if (action === "show-hint") showHint();
     if (action === "practice-next") practiceNext();
     if (action === "exam-prev") moveExam(-1);
     if (action === "exam-next") moveExam(1);
