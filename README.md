@@ -1,5 +1,11 @@
 # 飛行腦｜無人機學科模擬考
 
+<p align="center">
+  <a href="https://andrewkotw.github.io/dronetest/">
+    <img src="./assets/social-preview.png" alt="飛行腦｜無人機學科模擬考" width="100%">
+  </a>
+</p>
+
 一套以繁體中文製作的無人機學科練習與模擬考系統。採用純 HTML、CSS 與 JavaScript 開發，不需要登入，作答紀錄會保存在使用者的瀏覽器中。
 
 ## 線上測驗
