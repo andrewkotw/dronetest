@@ -8,6 +8,7 @@
  * Useful options:
  *   node generate-hints.js --limit=10
  *   node generate-hints.js --concurrency=4
+ *   node generate-hints.js --calculation-only --force
  *   node generate-hints.js --force
  *
  * The output is saved after every question, so an interrupted run can resume.
@@ -37,11 +38,20 @@ loadLocalEnvironment();
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || "gpt-5.6-luna";
 const force = process.argv.includes("--force");
+const calculationOnly = process.argv.includes("--calculation-only");
 const limitArgument = process.argv.find((argument) => argument.startsWith("--limit="));
 const limit = limitArgument ? Number(limitArgument.split("=")[1]) : Infinity;
 const concurrencyArgument = process.argv.find((argument) => argument.startsWith("--concurrency="));
 const concurrency = concurrencyArgument ? Number(concurrencyArgument.split("=")[1]) : 4;
 const promptVersion = 2;
+const calculationPromptVersion = 1;
+const calculationQuestionIds = new Set([
+  "第二章 基礎飛行原理::231",
+  "第二章 基礎飛行原理::232",
+  "第三章 氣象::125",
+  "第三章 氣象::126",
+  "第四章 緊急處置與飛行決策::76"
+]);
 
 if (!apiKey) {
   console.error("缺少 OPENAI_API_KEY。請先在終端機設定環境變數，再重新執行。");
@@ -91,7 +101,9 @@ function extractOutputText(data) {
 }
 
 async function createHint(question) {
+  const isCalculation = calculationQuestionIds.has(question.id);
   const input = {
+    questionType: isCalculation ? "calculation" : "concept",
     chapter: question.chapter,
     question: question.text,
     options: question.options,
@@ -114,7 +126,8 @@ async function createHint(question) {
         "請根據提供的題目、選項與正確答案，產生兩個循序漸進的提示和一段作答後解析。",
         "hint1 只提醒應思考的概念，不得透露答案、選項代號或直接引用正確選項。",
         "hint2 可以協助排除錯誤方向，但仍不得透露答案、選項代號或直接引用正確選項。",
-        "explanation 可在作答後清楚說明正確答案的理由，但不得提及 A、B、C、D 選項代號，因為前端會打亂選項順序。不要聲稱題目沒有提供的法條號碼、數值或最新規定。",
+        "若 questionType 是 calculation，hint1 必須提供可直接使用的公式並簡短說明符號；hint2 必須代入本題已知數值並列出算式，但停在最後運算前，不得算出最終數值。explanation 則要列出完整計算步驟。",
+        "explanation 可在作答後清楚說明正確答案的理由，並解釋最容易混淆的錯誤觀念為何不成立，不能只換句話重述正確選項。不得提及 A、B、C、D 選項代號，因為前端會打亂選項順序。不要聲稱題目沒有提供的法條號碼、數值或最新規定。",
         "每個提示最多 55 個中文字；解析最多 100 個中文字。不要使用 Markdown。"
       ].join("\n"),
       input: JSON.stringify(input),
@@ -177,9 +190,15 @@ async function main() {
   if (!Array.isArray(questions) || !questions.length) throw new Error("questions.js 沒有有效題目。");
 
   const hints = loadExistingHints();
-  const pending = questions.filter((question) => {
+  const eligibleQuestions = calculationOnly
+    ? questions.filter((question) => calculationQuestionIds.has(question.id))
+    : questions;
+  const pending = eligibleQuestions.filter((question) => {
     const existing = hints[question.id];
-    return force || !existing || existing.promptVersion !== promptVersion;
+    return force
+      || !existing
+      || existing.promptVersion !== promptVersion
+      || (calculationQuestionIds.has(question.id) && existing.calculationPromptVersion !== calculationPromptVersion);
   }).slice(0, limit);
 
   if (!pending.length) {
@@ -198,7 +217,8 @@ async function main() {
       hints[question.id] = {
         ...generated,
         promptVersion,
-        model
+        model,
+        ...(calculationQuestionIds.has(question.id) ? { calculationPromptVersion } : {})
       };
       saveHints(hints);
       completed += 1;

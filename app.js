@@ -250,9 +250,14 @@
     const correct = answer === question.answer;
     const questionLength = [...question.text].length;
     const longestOption = Math.max(...Object.values(question.options).map((option) => [...option].length));
-    const density = questionLength > 105 || longestOption > 55
+    const questionDensity = questionLength > 105
       ? "compact"
-      : questionLength > 65 || longestOption > 38
+      : questionLength > 65
+        ? "cozy"
+        : "standard";
+    const optionDensity = longestOption > 55
+      ? "compact"
+      : longestOption > 38
         ? "cozy"
         : "standard";
     const progressWidth = ((session.currentIndex + (isAnswered ? 1 : 0)) / session.questionIds.length) * 100;
@@ -267,7 +272,7 @@
           <button class="btn btn-secondary" type="button" data-action="exit-session">暫停並回首頁</button>
           <div class="progress-track" aria-label="作答進度"><div class="progress-fill" style="width:${progressWidth}%"></div></div>
         </div>
-        <article class="question-card density-${density}">
+        <article class="question-card density-${questionDensity} options-${optionDensity}">
           <div class="question-chapter">${escapeHtml(question.chapter)} · 第 ${escapeHtml(question.number)} 題</div>
           <h1>${escapeHtml(question.text)}</h1>
           <div class="answer-grid" role="group" aria-label="答案選項">
@@ -397,7 +402,18 @@
 
   function finishPractice() {
     const session = state.activeSession;
-    const correct = session.questionIds.filter((id) => session.answers[id] === questionById.get(id).answer).length;
+    const details = session.questionIds.map((id, index) => {
+      const question = questionById.get(id);
+      const answer = session.answers[id] || null;
+      return {
+        id,
+        number: index + 1,
+        answer,
+        isCorrect: answer === question.answer,
+        order: session.optionOrder[id]
+      };
+    });
+    const correct = details.filter((detail) => detail.isCorrect).length;
     const initialMastered = new Set(session.initialMastered);
     const newlyMastered = session.questionIds.filter((id) => !initialMastered.has(id) && getProgress(id).lastCorrect === true).length;
     const pendingWrong = questions.filter((question) => {
@@ -410,6 +426,7 @@
       correct,
       newlyMastered,
       pendingWrong,
+      wrongDetails: details.filter((detail) => !detail.isCorrect),
       session
     };
     state.activeSession = null;
@@ -493,6 +510,7 @@
             <div class="result-stat"><strong>${result.newlyMastered}</strong><span>新增掌握</span></div>
             <div class="result-stat"><strong>${result.pendingWrong}</strong><span>目前待複習</span></div>
           </div>
+          ${renderPracticeReview(result)}
           <div class="panel" style="text-align:center">
             <h2>錯題會再回來</h2>
             <p class="lead" style="margin-inline:auto">下一場練習會優先抽出目前尚未答對的題目，答對後就會移出待複習清單。</p>
@@ -505,6 +523,43 @@
     if (!originalKey) return "未作答";
     const index = order.indexOf(originalKey);
     return `${DISPLAY_LETTERS[index]}：${escapeHtml(question.options[originalKey])}`;
+  }
+
+  function renderPracticeReview(result) {
+    const wrongDetails = result.wrongDetails || [];
+    if (!wrongDetails.length) {
+      return `<section class="practice-review practice-review-perfect">
+        <h2>本回全數答對</h2>
+        <p>這一輪沒有錯題，做得很好！</p>
+      </section>`;
+    }
+
+    return `<section class="practice-review">
+      <div class="review-heading">
+        <div>
+          <p class="eyebrow">Final Review</p>
+          <h2>本回錯題解析</h2>
+        </div>
+        <span>${wrongDetails.length} 題待複習</span>
+      </div>
+      <div class="review-list">
+        ${wrongDetails.map((detail) => {
+          const question = questionById.get(detail.id);
+          const explanation = questionHints[detail.id]?.explanation;
+          return `<article class="review-item">
+            <span class="pill">第 ${detail.number} 題 · 答錯</span>
+            <div class="review-chapter">${escapeHtml(question.chapter)}</div>
+            <h3>${escapeHtml(question.text)}</h3>
+            <p>你的答案：<strong>${answerDescription(question, detail.answer, detail.order)}</strong></p>
+            <p>正確答案：<strong>${answerDescription(question, question.answer, detail.order)}</strong></p>
+            <div class="review-explanation">
+              <strong>AI 解析</strong>
+              <p>${explanation ? escapeHtml(explanation) : "請比較正確答案與原本選擇，重新確認這一題的核心觀念。"}</p>
+            </div>
+          </article>`;
+        }).join("")}
+      </div>
+    </section>`;
   }
 
   function renderExamReview(result) {

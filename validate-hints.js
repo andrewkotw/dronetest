@@ -13,6 +13,13 @@ const hints = loadWindowValue("hints.js", "QUESTION_HINTS");
 const errors = [];
 const warnings = [];
 const questionIds = new Set(questions.map((question) => question.id));
+const calculationQuestionIds = new Set([
+  "第二章 基礎飛行原理::231",
+  "第二章 基礎飛行原理::232",
+  "第三章 氣象::125",
+  "第三章 氣象::126",
+  "第四章 緊急處置與飛行決策::76"
+]);
 
 for (const question of questions) {
   const hint = hints[question.id];
@@ -29,6 +36,15 @@ for (const question of questions) {
   }
   if (hint.promptVersion !== 2 || hint.model !== "gpt-5.6-luna") {
     errors.push(`${question.id}: invalid generation metadata`);
+  }
+  if (calculationQuestionIds.has(question.id) && hint.calculationPromptVersion !== 1) {
+    errors.push(`${question.id}: calculation hint is outdated`);
+  }
+  if (calculationQuestionIds.has(question.id) && !/[=＝]/.test(hint.hint1)) {
+    errors.push(`${question.id}: first calculation hint does not contain a formula`);
+  }
+  if (calculationQuestionIds.has(question.id) && (!/\d/.test(hint.hint2) || !/[=＝為×÷／]/.test(hint.hint2))) {
+    errors.push(`${question.id}: second calculation hint does not contain a substituted expression`);
   }
 
   const combinedHints = `${hint.hint1} ${hint.hint2}`;

@@ -53,7 +53,7 @@ Copy-Item .env.example .env
 node generate-hints.js
 ```
 
-產生器會在每一題完成後更新 `hints.js`，中斷後再次執行即可接續。測試時可使用 `node generate-hints.js --limit=10`；可用 `--concurrency=1` 至 `8` 調整並行請求數；需要重新產生全部提示時可加上 `--force`。
+產生器會在每一題完成後更新 `hints.js`，中斷後再次執行即可接續。測試時可使用 `node generate-hints.js --limit=10`；可用 `--concurrency=1` 至 `8` 調整並行請求數；需要重新產生全部提示時可加上 `--force`。使用 `node generate-hints.js --calculation-only --force` 可只重新產生計算題，這類題目的提示會提供公式、代入算式及完整作答後解析。
 
 產生完成後可執行 `node validate-hints.js`，檢查題數、欄位、長度及明顯的答案洩漏。
 
